@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <!-- ============================== -->
+    <!-- NAVIGATION                     -->
+    <!-- ============================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="status.html">Check Status</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pvc.html">My PVC</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="handleLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================== -->
+    <!-- DASHBOARD                      -->
+    <!-- ============================== -->
+    <section class="py-4">
+        <div class="container">
+
+            <!-- Welcome -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3><i class="fas fa-user-circle text-primary"></i> Welcome, <span id="userName">User</span></h3>
+                    <p class="text-muted" id="userRole">Role: voter</p>
+                </div>
+                <div>
+                    <span class="badge bg-success fs-6 p-2" id="statusBadge">Active</span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4" id="statsContainer">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="number" id="totalVoters">0</div>
+                        <div class="label">Total Voters</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-clock text-warning"></i></div>
+                        <div class="number" id="pendingVoters">0</div>
+                        <div class="label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-check-circle text-success"></i></div>
+                        <div class="number" id="approvedVoters">0</div>
+                        <div class="label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-times-circle text-danger"></i></div>
+                        <div class="number" id="rejectedVoters">0</div>
+                        <div class="label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Voter Record -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> My Voter Record</h5>
+                </div>
+                <div class="card-body" id="myVoterRecord">
+                    <p class="text-muted">Loading your voter information...</p>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body" id="recentActivity">
+                    <p class="text-muted">No recent activity.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- FOOTER                         -->
+    <!-- ============================== -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ============================== -->
+    <!-- SCRIPTS                        -->
+    <!-- ============================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = getCurrentUser();
+            document.getElementById('userName').textContent = user.fullName || user.username;
+            document.getElementById('userRole').textContent = 'Role: ' + user.role;
+
+            loadDashboardStats();
+            loadVoterRecord(user);
+            loadRecentActivity();
+        });
+
+        function loadDashboardStats() {
+            const stats = getVoterStats();
+            document.getElementById('totalVoters').textContent = stats.total || 0;
+            document.getElementById('pendingVoters').textContent = stats.pending || 0;
+            document.getElementById('approvedVoters').textContent = stats.approved || 0;
+            document.getElementById('rejectedVoters').textContent = stats.rejected || 0;
+        }
+
+        function loadVoterRecord(user) {
+            const container = document.getElementById('myVoterRecord');
+            const voters = getVoters();
+            const voter = voters.find(v => v.username === user.username || v.email === user.email);
+
+            if (!voter) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        You don't have a voter registration yet.
+                        <a href="register.html" class="btn btn-primary btn-sm ms-2">Register Now</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let statusColor = 'secondary';
+            if (voter.status === 'Approved' || voter.status === 'Active') statusColor = 'success';
+            else if (voter.status === 'Pending') statusColor = 'warning';
+            else if (voter.status === 'Rejected') statusColor = 'danger';
+
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><td><strong>Full Name</strong></td><td>${voter.fullName}</td></tr>
+                            <tr><td><strong>Voter ID</strong></td><td>${voter.voterId || 'N/A'}</td></tr>
+                            <tr><td><strong>Application Number</strong></td><td>${voter.applicationNumber || 'N/A'}</td></tr>
+                            <tr><td><strong>NIN</strong></td><td>${maskNIN(voter.nin)}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><td><strong>LGA</strong></td><td>${voter.lga || 'N/A'}</td></tr>
+                            <tr><td><strong>State</strong></td><td>${voter.state || 'N/A'}</td></tr>
+                            <tr><td><strong>Status</strong></td><td>
+                                <span class="badge bg-${statusColor}">${voter.status}</span>
+                            </td></tr>
+                            <tr><td><strong>Registered On</strong></td><td>${formatDate(voter.createdAt)}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                ${voter.status === 'Approved' || voter.status === 'Active' ? `
+                <div class="text-center mt-2">
+                    <a href="pvc.html" class="btn btn-success">
+                        <i class="fas fa-download"></i> Download PVC
+                    </a>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        function loadRecentActivity() {
+            const logs = getAuditLogs();
+            const container = document.getElementById('recentActivity');
+
+            if (logs.length === 0) {
+                container.innerHTML = '<p class="text-muted">No recent activity.</p>';
+                return;
+            }
+
+            const recent = logs.slice(-5).reverse();
+            let html = '<ul class="list-group list-group-flush">';
+
+            recent.forEach(function(log) {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${log.action}</strong>
+                            <br />
+                            <small class="text-muted">${log.details || ''}</small>
+                        </div>
+                        <span class="badge bg-secondary">${formatDate(log.timestamp)}</span>
+                    </li>
+                `;
+            });
+
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                logoutUser();
+            }
+        }
+    </script>
+
+</body>
+</html>

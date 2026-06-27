@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointments - Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="appointment.html">Appointments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="handleLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+
+                    <div class="text-center mb-4">
+                        <h3><i class="fas fa-calendar-check text-primary"></i> Appointment Scheduling</h3>
+                        <p class="text-muted">Book your biometric capture appointment</p>
+                    </div>
+
+                    <div class="form-container">
+                        <form id="appointmentForm" onsubmit="handleAppointment(event)">
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Select LGA Center <span class="text-danger">*</span></label>
+                                <select id="appLga" class="form-select" required>
+                                    <option value="">Select your LGA</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Select Date <span class="text-danger">*</span></label>
+                                <input type="date" id="appDate" class="form-control" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Select Time <span class="text-danger">*</span></label>
+                                <select id="appTime" class="form-select" required>
+                                    <option value="">Select time</option>
+                                    <option value="09:00">09:00 AM</option>
+                                    <option value="09:30">09:30 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="10:30">10:30 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="12:30">12:30 PM</option>
+                                    <option value="13:00">01:00 PM</option>
+                                    <option value="13:30">01:30 PM</option>
+                                    <option value="14:00">02:00 PM</option>
+                                    <option value="14:30">02:30 PM</option>
+                                    <option value="15:00">03:00 PM</option>
+                                    <option value="15:30">03:30 PM</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                <i class="fas fa-calendar-plus"></i> Book Appointment
+                            </button>
+                        </form>
+
+                        <div id="appointmentMessage" class="mt-3"></div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-list text-primary"></i> My Appointments</h5>
+                        <div id="myAppointments">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let currentVoter = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = getCurrentUser();
+            const voters = getVoters();
+            currentVoter = voters.find(v => v.username === user.username || v.email === user.email);
+
+            const lgaSelect = document.getElementById('appLga');
+            const lgas = getLGAList();
+            lgas.forEach(function(lga) {
+                const option = document.createElement('option');
+                option.value = lga;
+                option.textContent = lga;
+                lgaSelect.appendChild(option);
+            });
+
+            const dateInput = document.getElementById('appDate');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+
+            loadMyAppointments();
+        });
+
+        function handleAppointment(event) {
+            event.preventDefault();
+
+            const lga = document.getElementById('appLga').value;
+            const date = document.getElementById('appDate').value;
+            const time = document.getElementById('appTime').value;
+            const msgDiv = document.getElementById('appointmentMessage');
+
+            if (!lga || !date || !time) {
+                showError('Please fill all fields!');
+                return;
+            }
+
+            if (!currentVoter) {
+                showError('You need to register as a voter first!');
+                return;
+            }
+
+            const appointments = getAppointments();
+            const existing = appointments.find(a => a.voterId === currentVoter.voterId && a.status === 'Scheduled');
+
+            if (existing) {
+                msgDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        You already have a scheduled appointment on ${formatDate(existing.date)} at ${existing.time}.
+                    </div>
+                `;
+                return;
+            }
+
+            const appointment = {
+                id: 'app_' + Date.now(),
+                voterId: currentVoter.voterId,
+                fullName: currentVoter.fullName,
+                lga: lga,
+                date: date,
+                time: time,
+                status: 'Scheduled',
+                createdAt: new Date().toISOString()
+            };
+
+            addAppointment(appointment);
+            addAuditLog('APPOINTMENT_BOOKED', `${currentVoter.fullName} booked appointment on ${date} at ${time}`);
+
+            msgDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Appointment Booked!</strong><br />
+                    Date: <strong>${formatDate(date)}</strong><br />
+                    Time: <strong>${time}</strong><br />
+                    LGA: <strong>${lga}</strong><br /><br />
+                    <small class="text-muted">Please arrive 15 minutes early with your documents.</small>
+                </div>
+            `;
+
+            document.getElementById('appointmentForm').reset();
+            loadMyAppointments();
+            showSuccess('Appointment booked successfully!');
+        }
+
+        function loadMyAppointments() {
+            const container = document.getElementById('myAppointments');
+
+            if (!currentVoter) {
+                container.innerHTML = '<p class="text-muted">Please register as a voter first.</p>';
+                return;
+            }
+
+            const appointments = getAppointments();
+            const myAppointments = appointments.filter(a => a.voterId === currentVoter.voterId);
+
+            if (myAppointments.length === 0) {
+                container.innerHTML = '<p class="text-muted">No appointments booked yet.</p>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            myAppointments.forEach(function(a) {
+                let statusColor = 'primary';
+                if (a.status === 'Completed') statusColor = 'success';
+                else if (a.status === 'Cancelled') statusColor = 'danger';
+
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${formatDate(a.date)}</strong> at <strong>${a.time}</strong>
+                            <br />
+                            <small class="text-muted">LGA: ${a.lga}</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-${statusColor}">${a.status}</span>
+                            ${a.status === 'Scheduled' ? `
+                            <button class="btn btn-danger btn-sm ms-2" onclick="cancelAppointment('${a.id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function cancelAppointment(appointmentId) {
+            if (!confirm('Cancel this appointment?')) return;
+
+            const appointments = getAppointments();
+            const index = appointments.findIndex(a => a.id === appointmentId);
+
+            if (index !== -1) {
+                appointments[index].status = 'Cancelled';
+                saveAppointments(appointments);
+                addAuditLog('APPOINTMENT_CANCELLED', `Appointment ${appointmentId} cancelled`);
+                showSuccess('Appointment cancelled!');
+                loadMyAppointments();
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                logoutUser();
+            }
+        }
+    </script>
+
+</body>
+</html>

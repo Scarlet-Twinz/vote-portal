@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PVC Download - Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        .pvc-card {
+            width: 400px;
+            height: 250px;
+            background: linear-gradient(135deg, #0d47a1 0%, #1a237e 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border: 3px solid #ffc107;
+            margin: 0 auto;
+            position: relative;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .pvc-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .pvc-card .card-header .country {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .pvc-card .card-header .election {
+            font-size: 0.6rem;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .pvc-card .card-body {
+            display: flex;
+            gap: 15px;
+            padding-top: 10px;
+        }
+
+        .pvc-card .card-body .photo {
+            width: 80px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .pvc-card .card-body .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pvc-card .card-body .details {
+            flex: 1;
+            font-size: 0.65rem;
+        }
+
+        .pvc-card .card-body .details .name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pvc-card .card-body .details .field {
+            opacity: 0.6;
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pvc-card .card-body .details .value {
+            font-weight: 600;
+            font-size: 0.7rem;
+            margin-bottom: 4px;
+        }
+
+        .pvc-card .card-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 6px;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .pvc-card .card-footer .qr-code {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px;
+        }
+
+        .pvc-card .card-footer .qr-code canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .pvc-card .watermark {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.45rem;
+            opacity: 0.2;
+            letter-spacing: 2px;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .pvc-card {
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+            }
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm no-print">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="pvc.html">My PVC</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="handleLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+
+                    <div class="text-center mb-4 no-print">
+                        <h3><i class="fas fa-id-card text-primary"></i> Permanent Voter Card (PVC)</h3>
+                        <p class="text-muted">Download or print your voter card</p>
+                    </div>
+
+                    <div id="pvcContainer" class="mb-4">
+                        <div id="pvcCard" class="pvc-card">
+                            <div class="card-header">
+                                <span class="country"><i class="fas fa-flag"></i> NIGERIA</span>
+                                <span class="election">INDEPENDENT NATIONAL ELECTORAL COMMISSION<br/>PERMANENT VOTER'S CARD</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="photo" id="voterPhoto">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="name" id="voterName">JOHN DOE</div>
+                                    <div class="field">Voter ID</div>
+                                    <div class="value" id="voterId">PVC20260001</div>
+                                    <div class="field">Date of Birth</div>
+                                    <div class="value" id="voterDob">01/01/1990</div>
+                                    <div class="field">LGA / Polling Unit</div>
+                                    <div class="value" id="voterLga">Alimosho / Unit A</div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <span>Serial: <span id="voterSerial">PVC2026A001</span></span>
+                                <div class="qr-code" id="qrCodeContainer"></div>
+                            </div>
+                            <div class="watermark">INEC 2026</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center no-print">
+                        <button onclick="downloadPVC()" class="btn btn-success btn-lg">
+                            <i class="fas fa-download"></i> Download PDF
+                        </button>
+                        <button onclick="printPVC()" class="btn btn-primary btn-lg">
+                            <i class="fas fa-print"></i> Print PVC
+                        </button>
+                        <button onclick="generatePVC()" class="btn btn-warning btn-lg">
+                            <i class="fas fa-sync-alt"></i> Regenerate
+                        </button>
+                    </div>
+
+                    <div id="pvcMessage" class="mt-3 text-center"></div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto no-print">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let currentVoter = null;
+        let qrCodeInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = getCurrentUser();
+            const voters = getVoters();
+            currentVoter = voters.find(v => v.username === user.username || v.email === user.email);
+
+            if (!currentVoter) {
+                document.getElementById('pvcContainer').innerHTML = `
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>You don't have a voter registration yet.</p>
+                        <a href="register.html" class="btn btn-primary">Register Now</a>
+                    </div>
+                `;
+                return;
+            }
+
+            if (currentVoter.status !== 'Approved' && currentVoter.status !== 'Active') {
+                document.getElementById('pvcContainer').innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-clock"></i>
+                        <p>Your registration is <strong>${currentVoter.status}</strong>.</p>
+                        <p>PVC will be available after approval.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            generatePVC();
+        });
+
+        function generatePVC() {
+            if (!currentVoter) return;
+
+            document.getElementById('voterName').textContent = currentVoter.fullName || 'N/A';
+            document.getElementById('voterId').textContent = currentVoter.voterId || generateVoterID();
+            document.getElementById('voterDob').textContent = currentVoter.dob ? formatDate(currentVoter.dob) : 'N/A';
+            document.getElementById('voterLga').textContent = (currentVoter.lga || 'N/A') + ' / ' + (currentVoter.pollingUnit || 'Unit A');
+            document.getElementById('voterSerial').textContent = 'PVC' + Date.now().toString().slice(-8);
+
+            generateQRCode();
+            showSuccess('PVC generated successfully!');
+        }
+
+        function generateQRCode() {
+            const container = document.getElementById('qrCodeContainer');
+            container.innerHTML = '';
+
+            const data = JSON.stringify({
+                voterId: currentVoter.voterId,
+                name: currentVoter.fullName,
+                nin: currentVoter.nin
+            });
+
+            qrCodeInstance = new QRCode(container, {
+                text: data,
+                width: 45,
+                height: 45,
+                colorDark: '#0d47a1',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadPVC() {
+            const card = document.getElementById('pvcCard');
+
+            html2canvas(card, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: null
+            }).then(function(canvas) {
+                const imgData = canvas.toDataURL('image/png');
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('landscape', 'mm', 'a5');
+
+                const pdfWidth = 148;
+                const pdfHeight = 105;
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                const finalWidth = imgWidth * ratio;
+                const finalHeight = imgHeight * ratio;
+                const x = (pdfWidth - finalWidth) / 2;
+                const y = (pdfHeight - finalHeight) / 2;
+
+                pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+                pdf.save('PVC_' + currentVoter.voterId + '.pdf');
+
+                addAuditLog('PVC_DOWNLOAD', `PVC downloaded for ${currentVoter.fullName}`);
+                showSuccess('PVC downloaded successfully!');
+            }).catch(function(err) {
+                showError('Error generating PDF: ' + err.message);
+            });
+        }
+
+        function printPVC() {
+            window.print();
+        }
+
+        function regeneratePVC() {
+            if (!currentVoter) return;
+            document.getElementById('voterSerial').textContent = 'PVC' + Date.now().toString().slice(-8);
+            generateQRCode();
+            showSuccess('PVC regenerated!');
+        }
+
+        document.querySelector('[onclick="generatePVC()"]')?.addEventListener('click', regeneratePVC);
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                logoutUser();
+            }
+        }
+    </script>
+
+</body>
+</html>

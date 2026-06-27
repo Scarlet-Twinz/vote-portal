@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <!-- ============================== -->
+    <!-- NAVIGATION                     -->
+    <!-- ============================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal <span class="badge bg-warning text-dark">Admin</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="admin.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="handleLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================== -->
+    <!-- ADMIN DASHBOARD                -->
+    <!-- ============================== -->
+    <section class="py-4">
+        <div class="container">
+
+            <div class="mb-4">
+                <h3><i class="fas fa-user-shield text-primary"></i> Admin Dashboard</h3>
+                <p class="text-muted">Manage voters, registrations, and system settings</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="number" id="totalVoters">0</div>
+                        <div class="label">Total Voters</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-clock text-warning"></i></div>
+                        <div class="number" id="pendingVoters">0</div>
+                        <div class="label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-check-circle text-success"></i></div>
+                        <div class="number" id="approvedVoters">0</div>
+                        <div class="label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users-cog text-info"></i></div>
+                        <div class="number" id="totalUsers">0</div>
+                        <div class="label">Total Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3" id="adminTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#pendingTab">
+                        <i class="fas fa-clock"></i> Pending Applications
+                        <span class="badge bg-warning" id="pendingCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#allVotersTab">
+                        <i class="fas fa-users"></i> All Voters
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#usersTab">
+                        <i class="fas fa-user-cog"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#logsTab">
+                        <i class="fas fa-history"></i> Audit Logs
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+
+                <!-- PENDING APPLICATIONS -->
+                <div class="tab-pane fade show active" id="pendingTab">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div id="pendingList">
+                                <p class="text-muted">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALL VOTERS -->
+                <div class="tab-pane fade" id="allVotersTab">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <input type="text" id="searchVoter" class="form-control mb-3" placeholder="Search by name, NIN, or ID..." oninput="searchVoters()" />
+                            <div id="allVotersList">
+                                <p class="text-muted">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USERS -->
+                <div class="tab-pane fade" id="usersTab">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <button class="btn btn-primary btn-sm mb-3" onclick="showAddUserModal()">
+                                <i class="fas fa-user-plus"></i> Add User
+                            </button>
+                            <div id="usersList">
+                                <p class="text-muted">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AUDIT LOGS -->
+                <div class="tab-pane fade" id="logsTab">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div id="auditLogsList">
+                                <p class="text-muted">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- ADD USER MODAL                 -->
+    <!-- ============================== -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm" onsubmit="handleAddUser(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" id="newFullName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" id="newUsername" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="newEmail" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Min 6 characters" required minlength="6" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select id="newRole" class="form-select">
+                                <option value="voter">Voter</option>
+                                <option value="officer">Officer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Create User</button>
+                    </form>
+                    <div id="addUserMessage" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- FOOTER                         -->
+    <!-- ============================== -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ============================== -->
+    <!-- SCRIPTS                        -->
+    <!-- ============================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let allVotersCache = [];
+        let allUsersCache = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!hasRole('admin')) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            loadStats();
+            loadPendingApplications();
+            loadAllVoters();
+            loadUsers();
+            loadAuditLogs();
+        });
+
+        function loadStats() {
+            const stats = getVoterStats();
+            const users = getUsers();
+
+            document.getElementById('totalVoters').textContent = stats.total || 0;
+            document.getElementById('pendingVoters').textContent = stats.pending || 0;
+            document.getElementById('approvedVoters').textContent = stats.approved || 0;
+            document.getElementById('totalUsers').textContent = users.length || 0;
+            document.getElementById('pendingCount').textContent = stats.pending || 0;
+        }
+
+        function loadPendingApplications() {
+            const voters = getVoters();
+            const pending = voters.filter(v => v.status === 'Pending');
+            const container = document.getElementById('pendingList');
+
+            if (pending.length === 0) {
+                container.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> No pending applications!</div>`;
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Name</th><th>NIN</th><th>LGA</th><th>Applied</th><th>Action</th></tr></thead><tbody>';
+            pending.forEach(function(v) {
+                html += `
+                    <tr>
+                        <td><strong>${v.fullName}</strong></td>
+                        <td>${maskNIN(v.nin)}</td>
+                        <td>${v.lga || 'N/A'}</td>
+                        <td>${formatDate(v.createdAt)}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="approveVoter('${v.voterId}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectVoter('${v.voterId}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function approveVoter(voterId) {
+            if (confirm('Approve this voter registration?')) {
+                const result = updateVoter(voterId, { status: 'Approved', updatedAt: new Date().toISOString() });
+                if (result) {
+                    addAuditLog('APPROVE_VOTER', `Voter ${voterId} approved`);
+                    showSuccess('Voter approved successfully!');
+                    loadPendingApplications();
+                    loadStats();
+                }
+            }
+        }
+
+        function rejectVoter(voterId) {
+            const reason = prompt('Enter reason for rejection:');
+            if (reason !== null) {
+                const result = updateVoter(voterId, { status: 'Rejected', rejectionReason: reason, updatedAt: new Date().toISOString() });
+                if (result) {
+                    addAuditLog('REJECT_VOTER', `Voter ${voterId} rejected. Reason: ${reason}`);
+                    showSuccess('Voter rejected!');
+                    loadPendingApplications();
+                    loadStats();
+                }
+            }
+        }
+
+        function loadAllVoters() {
+            allVotersCache = getVoters();
+            renderAllVoters(allVotersCache);
+        }
+
+        function renderAllVoters(voters) {
+            const container = document.getElementById('allVotersList');
+            if (voters.length === 0) {
+                container.innerHTML = '<p class="text-muted">No voters registered yet.</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Name</th><th>Voter ID</th><th>NIN</th><th>LGA</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            voters.forEach(function(v) {
+                let statusColor = 'secondary';
+                if (v.status === 'Approved' || v.status === 'Active') statusColor = 'success';
+                else if (v.status === 'Pending') statusColor = 'warning';
+                else if (v.status === 'Rejected') statusColor = 'danger';
+
+                html += `
+                    <tr>
+                        <td>${v.fullName}</td>
+                        <td>${v.voterId || 'N/A'}</td>
+                        <td>${maskNIN(v.nin)}</td>
+                        <td>${v.lga || 'N/A'}</td>
+                        <td><span class="badge bg-${statusColor}">${v.status}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteVoterRecord('${v.voterId}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function searchVoters() {
+            const query = document.getElementById('searchVoter').value.toLowerCase();
+            const filtered = allVotersCache.filter(function(v) {
+                return v.fullName.toLowerCase().includes(query) ||
+                    (v.voterId && v.voterId.toLowerCase().includes(query)) ||
+                    (v.nin && v.nin.includes(query));
+            });
+            renderAllVoters(filtered);
+        }
+
+        function deleteVoterRecord(voterId) {
+            if (confirm('Delete this voter record permanently?')) {
+                deleteVoter(voterId);
+                addAuditLog('DELETE_VOTER', `Voter ${voterId} deleted`);
+                showSuccess('Voter deleted!');
+                loadAllVoters();
+                loadStats();
+            }
+        }
+
+        function loadUsers() {
+            const users = getUsers();
+            allUsersCache = users;
+            const container = document.getElementById('usersList');
+
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-muted">No users found.</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody>';
+            users.forEach(function(u) {
+                let roleColor = 'secondary';
+                if (u.role === 'admin') roleColor = 'danger';
+                else if (u.role === 'officer') roleColor = 'warning';
+                else if (u.role === 'voter') roleColor = 'info';
+
+                html += `
+                    <tr>
+                        <td>${u.fullName}</td>
+                        <td>${u.username}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge bg-${roleColor}">${u.role}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUserAccount('${u.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function deleteUserAccount(userId) {
+            if (confirm('Delete this user account?')) {
+                const result = deleteUser(userId);
+                if (result.success) {
+                    addAuditLog('DELETE_USER', `User ${userId} deleted`);
+                    showSuccess('User deleted!');
+                    loadUsers();
+                    loadStats();
+                }
+            }
+        }
+
+        function showAddUserModal() {
+            document.getElementById('addUserForm').reset();
+            document.getElementById('addUserMessage').innerHTML = '';
+            new bootstrap.Modal(document.getElementById('addUserModal')).show();
+        }
+
+        function handleAddUser(event) {
+            event.preventDefault();
+
+            const fullName = document.getElementById('newFullName').value.trim();
+            const username = document.getElementById('newUsername').value.trim();
+            const email = document.getElementById('newEmail').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+
+            const result = registerUser(username, password, fullName, email, role);
+
+            const msgDiv = document.getElementById('addUserMessage');
+
+            if (result.success) {
+                msgDiv.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+                addAuditLog('ADD_USER', `User ${username} added as ${role}`);
+                setTimeout(function() {
+                    document.getElementById('addUserModal').querySelector('.btn-close').click();
+                    loadUsers();
+                    loadStats();
+                }, 1500);
+            } else {
+                msgDiv.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+            }
+        }
+
+        function loadAuditLogs() {
+            const logs = getAuditLogs();
+            const container = document.getElementById('auditLogsList');
+
+            if (logs.length === 0) {
+                container.innerHTML = '<p class="text-muted">No audit logs found.</p>';
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover table-sm"><thead><tr><th>User</th><th>Action</th><th>Details</th><th>Timestamp</th></tr></thead><tbody>';
+            logs.slice(-50).reverse().forEach(function(log) {
+                html += `
+                    <tr>
+                        <td><strong>${log.user || 'System'}</strong></td>
+                        <td><span class="badge bg-primary">${log.action}</span></td>
+                        <td>${log.details || ''}</td>
+                        <td><small>${formatDate(log.timestamp)}</small></td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                logoutUser();
+            }
+        }
+    </script>
+
+</body>
+</html>

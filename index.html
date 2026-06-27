@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <!-- ============================== -->
+    <!-- NAVIGATION                     -->
+    <!-- ============================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="status.html">Check Status</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================== -->
+    <!-- HERO SECTION                   -->
+    <!-- ============================== -->
+    <section class="hero-section text-center text-white">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold">Welcome to Voters Registration Portal</h1>
+                    <p class="lead mt-3">
+                        Register to vote, check your status, and manage your voter profile
+                    </p>
+                    <div class="mt-4">
+                        <a href="register.html" class="btn btn-warning btn-lg me-2">
+                            <i class="fas fa-user-plus"></i> Register Now
+                        </a>
+                        <a href="status.html" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-search"></i> Check Status
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- FEATURES SECTION               -->
+    <!-- ============================== -->
+    <section class="features py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Key Features</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card h-100 text-center p-3 shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                            <h5>Online Registration</h5>
+                            <p class="text-muted">Register from anywhere</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center p-3 shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-id-card fa-3x text-primary mb-3"></i>
+                            <h5>PVC Generation</h5>
+                            <p class="text-muted">Download your PVC</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center p-3 shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-fingerprint fa-3x text-primary mb-3"></i>
+                            <h5>Biometric Capture</h5>
+                            <p class="text-muted">Secure verification</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center p-3 shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                            <h5>Analytics</h5>
+                            <p class="text-muted">View registration stats</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- STATS SECTION                  -->
+    <!-- ============================== -->
+    <section class="stats py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Registration Statistics</h2>
+            <div class="row g-4" id="statsContainer">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="number" id="totalVoters">0</div>
+                        <div class="label">Total Voters</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-clock text-warning"></i></div>
+                        <div class="number" id="pendingVoters">0</div>
+                        <div class="label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-check-circle text-success"></i></div>
+                        <div class="number" id="approvedVoters">0</div>
+                        <div class="label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-times-circle text-danger"></i></div>
+                        <div class="number" id="rejectedVoters">0</div>
+                        <div class="label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- FOOTER                         -->
+    <!-- ============================== -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ============================== -->
+    <!-- SCRIPTS                        -->
+    <!-- ============================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stats = getVoterStats();
+            document.getElementById('totalVoters').textContent = stats.total || 0;
+            document.getElementById('pendingVoters').textContent = stats.pending || 0;
+            document.getElementById('approvedVoters').textContent = stats.approved || 0;
+            document.getElementById('rejectedVoters').textContent = stats.rejected || 0;
+        });
+    </script>
+
+</body>
+</html>

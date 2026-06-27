@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports - Voters Registration Portal</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-vote-yea"></i> VoterPortal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="reports.html">Reports</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="handleLogout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="py-4">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3><i class="fas fa-chart-bar text-primary"></i> Reports & Analytics</h3>
+                    <p class="text-muted">View registration statistics and generate reports</p>
+                </div>
+                <div>
+                    <button class="btn btn-success" onclick="exportCSV()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="printReports()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4" id="reportStats">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="number" id="rTotal">0</div>
+                        <div class="label">Total Voters</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="number text-warning" id="rPending">0</div>
+                        <div class="label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="number text-success" id="rApproved">0</div>
+                        <div class="label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="number text-danger" id="rRejected">0</div>
+                        <div class="label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Status Distribution</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> LGA Distribution</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="lgaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="fas fa-list"></i> Voter List Report</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Voter ID</th>
+                                    <th>NIN</th>
+                                    <th>LGA</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 Voters Registration Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let statusChartInstance = null;
+        let lgaChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadReportStats();
+            loadCharts();
+            loadVoterTable();
+        });
+
+        function loadReportStats() {
+            const stats = getVoterStats();
+            document.getElementById('rTotal').textContent = stats.total || 0;
+            document.getElementById('rPending').textContent = stats.pending || 0;
+            document.getElementById('rApproved').textContent = stats.approved || 0;
+            document.getElementById('rRejected').textContent = stats.rejected || 0;
+        }
+
+        function loadCharts() {
+            const voters = getVoters();
+
+            const statusData = {
+                labels: ['Pending', 'Approved', 'Rejected', 'Active'],
+                data: [
+                    voters.filter(v => v.status === 'Pending').length,
+                    voters.filter(v => v.status === 'Approved').length,
+                    voters.filter(v => v.status === 'Rejected').length,
+                    voters.filter(v => v.status === 'Active').length
+                ],
+                colors: ['#ffc107', '#28a745', '#dc3545', '#0d6efd']
+            };
+
+            const ctx1 = document.getElementById('statusChart').getContext('2d');
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(ctx1, {
+                type: 'pie',
+                data: {
+                    labels: statusData.labels,
+                    datasets: [{
+                        data: statusData.data,
+                        backgroundColor: statusData.colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            const lgaCounts = {};
+            voters.forEach(function(v) {
+                if (v.lga) {
+                    lgaCounts[v.lga] = (lgaCounts[v.lga] || 0) + 1;
+                }
+            });
+
+            const lgaLabels = Object.keys(lgaCounts);
+            const lgaData = Object.values(lgaCounts);
+
+            const ctx2 = document.getElementById('lgaChart').getContext('2d');
+            if (lgaChartInstance) lgaChartInstance.destroy();
+            lgaChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: lgaLabels.length > 0 ? lgaLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Voters per LGA',
+                        data: lgaData.length > 0 ? lgaData : [0],
+                        backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function loadVoterTable() {
+            const voters = getVoters();
+            const tbody = document.getElementById('reportTableBody');
+
+            if (voters.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No voters registered yet.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            voters.forEach(function(v) {
+                let statusColor = 'secondary';
+                if (v.status === 'Approved' || v.status === 'Active') statusColor = 'success';
+                else if (v.status === 'Pending') statusColor = 'warning';
+                else if (v.status === 'Rejected') statusColor = 'danger';
+
+                html += `
+                    <tr>
+                        <td><strong>${v.fullName}</strong></td>
+                        <td>${v.voterId || 'N/A'}</td>
+                        <td>${maskNIN(v.nin)}</td>
+                        <td>${v.lga || 'N/A'}</td>
+                        <td><span class="badge bg-${statusColor}">${v.status}</span></td>
+                        <td>${formatDate(v.createdAt)}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function exportCSV() {
+            const voters = getVoters();
+
+            if (voters.length === 0) {
+                showError('No data to export!');
+                return;
+            }
+
+            let csv = 'Name,Voter ID,NIN,LGA,Status,Registered\n';
+            voters.forEach(function(v) {
+                csv += `"${v.fullName}",${v.voterId || ''},${v.nin || ''},"${v.lga || ''}",${v.status},"${formatDate(v.createdAt)}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'voters_report.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            addAuditLog('EXPORT_CSV', 'Voter data exported to CSV');
+            showSuccess('CSV exported successfully!');
+        }
+
+        function printReports() {
+            window.print();
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                logoutUser();
+            }
+        }
+    </script>
+
+</body>
+</html>
