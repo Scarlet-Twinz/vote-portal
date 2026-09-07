@@ -89,3 +89,5 @@ This project is intended for learning and portfolio demonstration. It uses brows
 ## Author
 
 **Anthony Emmanuella Mmasinachi**
+
+**GitHub Repository:** https://github.com/Scarlet-Twinz/vote-portal
