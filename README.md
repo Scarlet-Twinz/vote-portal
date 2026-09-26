@@ -1,4 +1,4 @@
-# Voter Registration Portal
+#  Voter Registration Portal
 
 A browser-based voter registration portal built with HTML, CSS, and JavaScript. The project demonstrates a multi-page voter workflow with registration, authentication, voter records, appointments, PVC-related interfaces, administration, analytics, and browser-side persistence.
 
